@@ -19,7 +19,7 @@ betas=[1/5,1,100,500]
 radius=10000 #typical NS radius in m
 age=pulsar['AGE(Yr)']*3.154e+7 #3.154e+7 s = 1yr
 alphas=np.array([10,30,50,70,90])*np.pi/180
-inclinations=[0,45,90]
+inclinations=np.array([0,45,90])*np.pi/180.
 omega=pulsar['F0(hz)']*2*np.pi
 mu=pulsar['BSURF(G)']*10e-4*(radius**3)
 
