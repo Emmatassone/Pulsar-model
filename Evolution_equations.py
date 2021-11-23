@@ -48,10 +48,10 @@ class EvolutionEquation(PulsarRadiation):
     
     @staticmethod    
     def dot_M(dsr,dsi,p2r,p2i):
-        term1=-(c/(10*np.sqrt(2)*G))*np.einsum('ij,ij',dsi,dsi)
-        term2=-(c/(10*np.sqrt(2)*G))*np.einsum('ij,ij',dsr,dsr)
-        term3=-(1/(3*np.sqrt(2)*c))*np.einsum('i,i',p2i,p2i)
-        term4=-(1/(3*np.sqrt(2)*c))*np.einsum('i,i',p2r,p2r)
+        term1=-(c/(10*G))*np.einsum('ij,ij',dsi,dsi)
+        term2=-(c/(10*G))*np.einsum('ij,ij',dsr,dsr)
+        term3=-(1/(3*c))*np.einsum('i,i',p2i,p2i)
+        term4=-(1/(3*c))*np.einsum('i,i',p2r,p2r)
         return (term1+term2+term3+term4)/c**2
     
     @staticmethod

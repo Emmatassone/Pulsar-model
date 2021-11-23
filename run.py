@@ -16,26 +16,27 @@ pulsar={'NAME':'J0002+6216',
 
 #parameter in SI units
 betas=[1/5,1,100,500]
-radius=10000 #typical NS radius in m
+radius=1000*100 #typical NS radius in cm
 age=pulsar['AGE(Yr)']*3.154e+7 #3.154e+7 s = 1yr
-alphas=np.array([10,30,50,70,90])*np.pi/180
+alphas=np.array([10,30,50,70,90])*np.pi/180.
 inclinations=np.array([0,45,90])*np.pi/180.
 omega=pulsar['F0(hz)']*2*np.pi
-mu=pulsar['BSURF(G)']*10e-4*(radius**3)
-
-#geo_to_CGS(energy_loss, M1, dimensions.power, "direct")
+mu=pulsar['BSURF(G)']*(radius**3)
 
 #typical scales
 #L0=radius
 #T0=age/L0
 
-amplitude=PulsarAmplitudeModels.MagneticFieldInducedDeformation(betas[0],radius,age,alphas[0])
+amplitude=PulsarAmplitudeModels.MagneticFieldInducedDeformation(betas[-1],radius,age,alphas[0])
 pulsarmodel=PulsarRadiation(0, amplitude, alphas[0], inclinations[1], omega, mu)
 
 EE=EvolutionEquation(0, amplitude, alphas[0], inclinations[1], omega, mu)
 t=np.linspace(0,pulsar['P0(s)'],100)
 
 EE.LoadSigma(t)
+
+#Mdot=EE.get_dot_M(EE.dsr,EE.dsi,np.eye(len(t),3)*0,np.eye(len(t),3)*0)
+#M=EE.get_M(t, EE.dsr, EE.dsi, np.eye(len(t),3)*0,np.eye(len(t),3)*0,initial_M=1.4*Msun)
 Mdot=EE.get_dot_M(EE.dsr,EE.dsi,EE.p2r,EE.p2i)
 M=EE.get_M(t, EE.dsr, EE.dsi, EE.p2r, EE.p2i,initial_M=1.4*Msun)
 #mu=np.sqrt(4*np.pi*3*c**2*I*P*Pdot/(mu0*8*np.pi**2*np.sin(alpha)**2)) , I: momento de Inercia

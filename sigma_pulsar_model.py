@@ -1,7 +1,7 @@
 import numpy as np
 #from numpy.linalg import det, inv
 #from scipy.integrate import odeint
-
+from constants import c
 
 class PulsarRadiation:
     def __init__(self,t0,h0,alpha,i,omega,mu):
@@ -88,7 +88,7 @@ class PulsarRadiation:
 ##########################
     def RotationMatrix(self,t):
         P=[]
-        for i in range(len(t)):
+        for i in t:
             P.append([[np.cos(self.omega*(i-self.t0)),-np.cos(self.alpha)*np.sin(self.omega*(i-self.t0)),-np.sin(self.alpha)*np.sin(self.omega*(i-self.t0))], \
                [np.sin(self.omega*(i-self.t0)),np.cos(self.alpha)*np.cos(self.omega*(i-self.t0)),np.sin(self.alpha)*np.cos(self.omega*(i-self.t0))], \
                    [0                             ,-np.sin(self.alpha)                              ,np.cos(self.alpha)                               ]])
@@ -105,14 +105,16 @@ class PulsarRadiation:
         return 0+1j*np.array(eta_im)
     
     def psi1(self,t):
-        dt=abs(t[1]-t[0])*np.ones(len(t))
-        return np.array(list(map(np.gradient,self.psi0(t)/2,dt)))
+        dt=abs(t[1]-t[0])*np.ones(3)#len(t)
+        dpsi0=np.array(list(map(np.gradient,self.psi0(t).T,dt)))
+        return dpsi0.T/(np.sqrt(2)*c)
     
     def psi2(self,t):
-       dt=abs(t[1]-t[0])*np.ones(len(t))
-       return -np.array(list(map(np.gradient,self.psi1(t),dt)))
+       dt=abs(t[1]-t[0])*np.ones(3)#len(t)
+       dpsi1=np.array(list(map(np.gradient,self.psi1(t).T,dt)))
+       return -dpsi1.T/(np.sqrt(2)*c)
    
-    def psi1_2order(self,t):
+    def psi1_2order(self,t): #No se usa por ahora
         dt=abs(t[1]-t[0])
         ddeta=-self.psi2(t)
         sigma=self.sigma(t)
@@ -120,7 +122,7 @@ class PulsarRadiation:
         second_order_term=np.gradient(self.psi0(t),dt)/2+(3/20)*sigma_ddeta
         return self.psi1(t)+second_order_term
     
-    def psi2_2order(self,t):
+    def psi2_2order(self,t):#No se usa por ahora
         dt=abs(t[1]-t[0])
         return -np.gradient(self.psi1_2order(t),dt)
 """                      
