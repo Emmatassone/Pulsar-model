@@ -2,21 +2,22 @@ import numpy as np
 from scipy.integrate import cumtrapz
 from constants import c,G,epsilon
 from sigma_pulsar_model import PulsarRadiation
+from Maxwellfields import MaxwellFields
 
-class EvolutionEquation(PulsarRadiation):
+class EvolutionEquation(PulsarRadiation,MaxwellFields.perturbative):
     
     def __init__(self,t0,h0,alpha,i,omega,mu):
         super().__init__(t0,h0,alpha,i,omega,mu)
        
         
     def LoadSigma(self,t):
-        sigma2,dsigma2,ddsigma2=self.get_sigma_matrix(t)
-        self.sr=sigma2.real
-        self.si=sigma2.imag
-        self.dsr=dsigma2.real
-        self.dsi=dsigma2.imag
-        self.ddsr=ddsigma2.real
-        self.ddsi=ddsigma2.imag
+        self.sigma2,self.dsigma2,self.ddsigma2=self.get_sigma_matrix(t)
+        self.sr=self.sigma2.real
+        self.si=self.sigma2.imag
+        self.dsr=self.dsigma2.real
+        self.dsi=self.dsigma2.imag
+        self.ddsr=self.ddsigma2.real
+        self.ddsi=self.ddsigma2.imag
         self.p1r=self.psi1(t).real
         self.p1i=self.psi1(t).imag
         self.p2r=self.psi2(t).real
@@ -50,8 +51,8 @@ class EvolutionEquation(PulsarRadiation):
     def dot_M(dsr,dsi,p2r,p2i):
         term1=-(c/(10*G))*np.einsum('ij,ij',dsi,dsi)
         term2=-(c/(10*G))*np.einsum('ij,ij',dsr,dsr)
-        term3=-(1/(3*c**2))*np.einsum('i,i',p2i,p2i)
-        term4=-(1/(3*c**2))*np.einsum('i,i',p2r,p2r)
+        term3=-(1/(6*c))*np.einsum('i,i',p2i,p2i)
+        term4=-(1/(6*c))*np.einsum('i,i',p2r,p2r)
         return (term1+term2+term3+term4)/c**2
     
     @staticmethod
