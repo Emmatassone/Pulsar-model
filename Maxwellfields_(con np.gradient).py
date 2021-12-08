@@ -23,64 +23,34 @@ class MaxwellFields:
                        [0                             ,-np.sin(self.alpha)                              ,np.cos(self.alpha)                               ]])
             
             return P
-        
-        def DotRotationMatrix(self,t):
-            om = self.omega
-            dot_P=[]
-            for i in t:
-                dot_P.append([[-om*np.sin(self.omega*(i-self.t0)),-om*np.cos(self.alpha)*np.cos(self.omega*(i-self.t0)),-om*np.sin(self.alpha)*np.cos(self.omega*(i-self.t0))], \
-                   [om*np.cos(self.omega*(i-self.t0)),-om*np.cos(self.alpha)*np.sin(self.omega*(i-self.t0)),-om*np.sin(self.alpha)*np.sin(self.omega*(i-self.t0))], \
-                       [0                             ,0                              ,0                               ]])
             
-            return dot_P
-        
-        def DDotRotationMatrix(self,t):
-            om2 = self.omega**2
-            ddot_P=[]
-            for i in t:
-                ddot_P.append([[-om2*np.cos(self.omega*(i-self.t0)),om2*np.cos(self.alpha)*np.sin(self.omega*(i-self.t0)),om2*np.sin(self.alpha)*np.sin(self.omega*(i-self.t0))], \
-                   [-om2*np.sin(self.omega*(i-self.t0)),-om2*np.cos(self.alpha)*np.cos(self.omega*(i-self.t0)),-om2*np.sin(self.alpha)*np.cos(self.omega*(i-self.t0))], \
-                       [0                             ,0                              ,0                               ]])
-            
-            return ddot_P
-        
         def psi0(self,t):
             
             P=self.RotationMatrix(t)
             eta_im=[]
             for i in range(len(t)):
                 eta_im.append(np.dot(P[i],np.array([0,0,self.mu])))
+            
             return 0+1j*np.array(eta_im)
         
         def psi1(self,t):
-            #dt=abs(t[1]-t[0])*np.ones(3)#len(t)
-            #dpsi0=np.array(list(map(np.gradient,self.psi0(t).T,dt)))
-            #return dpsi0.T/(np.sqrt(2)*c)
-            dot_P = self.DotRotationMatrix(t)
-            dmu = []
-            for i in range(len(t)):
-                dmu.append(np.dot(dot_P[i],np.array([0,0,self.mu])))
-            return 0-1j*np.array(dmu)/(np.sqrt(2)*c)
-            
-        def psi2(self,t):
-           #dt=abs(t[1]-t[0])*np.ones(3)#len(t)
-           #dpsi1=np.array(list(map(np.gradient,self.psi1(t).T,dt)))
-           #return -np.sqrt(2)*dpsi1.T/c
-           ddot_P = self.DDotRotationMatrix(t)
-           ddmu= []
-           for i in range(len(t)):
-               ddmu.append(np.dot(ddot_P[i],np.array([0,0,self.mu])))
-           return 0+1j*np.array(ddmu)/c**2
+            dt=abs(t[1]-t[0])*np.ones(3)#len(t)
+            dpsi0=np.array(list(map(np.gradient,self.psi0(t).T,dt)))
+            return dpsi0.T/(np.sqrt(2)*c)
         
-        def psi1_2order(self,t):
-            ppmu=self.psi2(t)
-            pmu=-self.psi1(t)
+        def psi2(self,t):
+           dt=abs(t[1]-t[0])*np.ones(3)#len(t)
+           dpsi1=np.array(list(map(np.gradient,self.psi1(t).T,dt)))
+           return -np.sqrt(2)*dpsi1.T/c
+       
+        def psi1_2order(self,t): #No se usa por ahora
+            ddeta=-self.psi2(t)
             sigma=self.sigma(t)
-            sigma_ddeta=np.array([np.dot(sigma[i],ppmu[i]) for i in range(len(t))])
-            second_order_term=pmu+(3/20)*sigma_ddeta
+            sigma_ddeta=np.array([np.dot(sigma[i],ddeta[i]) for i in range(len(t))])
+            second_order_term=self.psi1(t)+(3/20)*sigma_ddeta
             return second_order_term#+self.psi1(t)
         
-        def psi2_2order(self,t):
+        def psi2_2order(self,t):#No se usa por ahora
             dt=abs(t[1]-t[0])*np.ones(3)
             dpsi1=np.array(list(map(np.gradient,self.psi1_2order(t).T,dt)))
             return -np.sqrt(2)*dpsi1.T/c

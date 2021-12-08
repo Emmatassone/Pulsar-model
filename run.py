@@ -16,20 +16,21 @@ pulsar={'NAME':'J0002+6216',
 
 #parameter in SI units
 betas=[1/5,1,100,500]
-radius=1000*100 #typical NS radius in cm
+radius=10000*100 #typical NS radius in cm
 age=pulsar['AGE(Yr)']*3.154e+7 #3.154e+7 s = 1yr
 alphas=np.array([10,30,50,70,90])*np.pi/180.
 inclinations=np.array([0,45,90])*np.pi/180.
 omega=pulsar['F0(hz)']*2*np.pi
-mu=pulsar['BSURF(G)']*(radius**3)
-mu=2*np.pi*mu*3e9/(mu0*c)
+mu=pulsar['BSURF(G)']*(radius**3) #Dipolar moments in gaussian cgs units
+
 print(mu)
 
 amplitude=PulsarAmplitudeModels.MagneticFieldInducedDeformation(betas[0],radius,age,alphas[0])
 pulsarmodel=PulsarRadiation(0, amplitude, alphas[0], inclinations[1], omega, mu)
 
 EE=EvolutionEquation(0, amplitude, alphas[0], inclinations[1], omega, mu)
-t=np.linspace(0,pulsar['P0(s)'],100)
+NumberOfPeriods=1
+t=np.linspace(0,NumberOfPeriods*pulsar['P0(s)'],NumberOfPeriods*100)
 
 EE.LoadSigma(t)
 #Only sigma
@@ -37,8 +38,8 @@ EE.LoadSigma(t)
 #M=EE.get_M(t, EE.dsr, EE.dsi, np.eye(len(t),3)*0,np.eye(len(t),3)*0,initial_M=1.4*Msun)
 #Only phi
 null_sigmas=np.zeros_like(EE.dsr)
-Mdot=EE.get_dot_M(null_sigmas,null_sigmas,EE.p2r,EE.p2i)
-M=EE.get_M(t, null_sigmas,null_sigmas, EE.p2r, EE.p2i,initial_M=0)#+1.4*Msun
+Edot=EE.get_dot_E(null_sigmas,null_sigmas,EE.p2r,EE.p2i)
+E=EE.get_E(t, null_sigmas,null_sigmas, EE.p2r, EE.p2i,initial_M=0)#+1.4*Msun
 #Both
 #Mdot=EE.get_dot_M(EE.dsr,EE.dsi,EE.p2r,EE.p2i)
 #M=EE.get_M(t, EE.dsr, EE.dsi, EE.p2r, EE.p2i,initial_M=0)#+1.4*Msun
@@ -46,14 +47,14 @@ M=EE.get_M(t, null_sigmas,null_sigmas, EE.p2r, EE.p2i,initial_M=0)#+1.4*Msun
 #nt,s,si=pulsarmodel.sigma_inv(t)
 # plotting 
 term2=-(c/(10*G))*np.einsum('ij,ij',EE.dsr[1],EE.dsr[1])
-term3=-(1/(6*c))*np.einsum('i,i',EE.p2i[1],EE.p2i[1])
+term3=-(1/(6*c))*np.einsum('i,i',EE.p2i[3],EE.p2i[3])
 print('sigma term:',term2)
 print('phi term:',term3)
 fig ,(ax1,ax2) = plt.subplots(1,2)
-ax1.plot(t[1:], Mdot[1:])
+ax1.plot(t[1:-2], Edot[1:-2])
 ax1.set_xlabel("t")
 ax1.set_ylabel("$\dot{M}$",rotation=90,loc='top')
-ax2.plot(t[1:], M[1:])
+ax2.plot(t[1:], E[1:])
 ax2.set_xlabel("t")
 ax2.set_ylabel("$M$",rotation=90,loc='top')
 fig.tight_layout()

@@ -22,38 +22,42 @@ class EvolutionEquation(PulsarRadiation,MaxwellFields.perturbative):
         self.p1i=self.psi1(t).imag
         self.p2r=self.psi2(t).real
         self.p2i=self.psi2(t).imag
-      
-
+        
+        """self.p1r=self.psi1_2order(t).real
+        self.p1i=self.psi1_2order(t).imag
+        self.p2r=self.psi2_2order(t).real
+        self.p2i=self.psi2_2order(t).imag"""
+        
     @staticmethod
     def dot_D(P,Q,p1r,p1i,p2r,p2i):
-        term1=np.sqrt(2)*P/c
-        term2=-(1/(3*c**2))*np.einsum('ijk,j,k->i',epsilon,p2i,p1r)
-        term3=-(1/(3*c**2))*np.einsum('ijk,j,k->i',epsilon,p1i,p2r)
-        term4=-np.sqrt(2)*Q*p2r/(3*c**2)
+        term1=P
+        term2=-(1/(3*np.sqrt(2)*c))*np.einsum('ijk,j,k->i',epsilon,p2i,p1r)
+        term3=-(1/(3*np.sqrt(2)*c))*np.einsum('ijk,j,k->i',epsilon,p1i,p2r)
+        term4=-Q*p2r/(3*c)
         return term1+term2+term3+term4
     
     @staticmethod
     def dot_J(Q,sr,si,dsr,dsi,p1r,p1i,p2r,p2i):
-        term1=(1/(3*c**2))*np.einsum('ijk,j,k->i',epsilon,p1i,p2i)
-        term2=(1/(3*c**2))*np.einsum('ijk,j,k->i',epsilon,p1r,p2r)
+        term1=(1/(3*np.sqrt(2)*c))*np.einsum('ijk,j,k->i',epsilon,p1i,p2i)
+        term2=(1/(3*np.sqrt(2)*c))*np.einsum('ijk,j,k->i',epsilon,p1r,p2r)
         term3=-(c**2/(5*G))*np.einsum('ijk,jl,lk->i',epsilon,si,dsi)
         term4=-(c**2/(5*G))*np.einsum('ijk,jl,lk->i',epsilon,sr,dsr)
-        term5=np.sqrt(2)*Q*p2i/(3*c**2)
+        term5=Q*p2i/(3*c)
         return term1+term2+term3+term4+term5
     
     @staticmethod    
     def dot_P(dsr,dsi,p1i,p2r):
-        term1=-np.sqrt(2)*c**2/(15*G)*np.einsum('ijk,jl,lk->i',epsilon,dsi,dsr)
-        term2=c**4/(3*np.sqrt(2)*G)*np.einsum('ijk,jl,lk->i',epsilon,p1i,p2r)
+        term1=-2*c**2/(15*G)*np.einsum('ijk,jl,lk->i',epsilon,dsi,dsr)
+        term2=np.einsum('ijk,jl,lk->i',epsilon,p1i,p2r)/6
         return term1+term2
     
     @staticmethod    
-    def dot_M(dsr,dsi,p2r,p2i):
+    def dot_E(dsr,dsi,p2r,p2i):
         term1=-(c/(10*G))*np.einsum('ij,ij',dsi,dsi)
         term2=-(c/(10*G))*np.einsum('ij,ij',dsr,dsr)
         term3=-(1/(6*c))*np.einsum('i,i',p2i,p2i)
         term4=-(1/(6*c))*np.einsum('i,i',p2r,p2r)
-        return (term1+term2+term3+term4)/c**2
+        return (term1+term2+term3+term4)
     
     @staticmethod
     def R(R,Q,D,M,P,sr,si,p1r,p1i,p2r,p2i):#chequear formula
@@ -105,8 +109,8 @@ class EvolutionEquation(PulsarRadiation,MaxwellFields.perturbative):
     def get_dot_P(self,dsr,dsi,p1i,p2r):
         return np.array(list(map(self.dot_P,dsr,dsi,p1i,p2r)))
 
-    def get_dot_M(self,dsr,dsi,p2r,p2i):
-        return np.array(list(map(self.dot_M,dsr,dsi,p2r,p2i)))
+    def get_dot_E(self,dsr,dsi,p2r,p2i):
+        return np.array(list(map(self.dot_E,dsr,dsi,p2r,p2i)))
     
     def get_J(self,t,Q,sr,si,dsr,dsi,p1r,p1i,p2r,p2i,initial_J=0):
         return cumtrapz(self.get_dot_J(Q,sr,si,dsr,dsi,p1r,p1i,p2r,p2i).T,t,initial=initial_J)
@@ -114,6 +118,6 @@ class EvolutionEquation(PulsarRadiation,MaxwellFields.perturbative):
     def get_P(self,t,dsr,dsi,p1i,p2r,initial_P=0):
         return cumtrapz(self.get_dot_P(dsr,dsi,p1i,p2r).T,t,initial=initial_P)
     
-    def get_M(self,t,dsr,dsi,p2r,p2i,initial_M=0):
-        return cumtrapz(self.get_dot_M(dsr,dsi,p2r,p2i),t,initial=initial_M)
+    def get_E(self,t,dsr,dsi,p2r,p2i,initial_M=0):
+        return cumtrapz(self.get_dot_E(dsr,dsi,p2r,p2i),t,initial=initial_M)
         
